@@ -77,7 +77,7 @@ export function useEmitter() {
 function isChildComponent(componentChild, componentParent) {
   const parentUId = componentParent.uid
 
-  while (componentChild && componentChild?.parent?.uid !== parentUId) {
+  while (componentChild && componentChild?.uid !== parentUId) {
     componentChild = componentChild.parent
   }
 

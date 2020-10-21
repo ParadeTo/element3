@@ -145,7 +145,9 @@ ComponentNames.forEach((name) => {
       'message-box',
       'color-picker',
       'cascader',
-      'cascader-panel'
+      'cascader-panel',
+      'time-picker',
+      'time-select'
     ].indexOf(name) > -1
   ) {
     // 白名单 挨个替换

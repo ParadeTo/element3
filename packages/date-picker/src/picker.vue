@@ -90,6 +90,7 @@
 </template>
 
 <script>
+import { createApp } from 'vue'
 import Clickoutside from 'element-ui/src/utils/clickoutside'
 import {
   formatDate,
@@ -101,6 +102,7 @@ import Popper from 'element-ui/src/utils/vue-popper'
 import Emitter from 'element-ui/src/mixins/emitter'
 import ElInput from 'element-ui/packages/input'
 import merge from 'element-ui/src/utils/merge'
+import { useEmitter } from 'element-ui/src/use/emitter'
 
 const NewPopper = {
   props: {
@@ -392,7 +394,7 @@ export default {
       type: String,
       default: 'left'
     },
-    value: {},
+    modelValue: {},
     defaultValue: {},
     defaultTime: {},
     rangeSeparator: {
@@ -425,12 +427,12 @@ export default {
       if (this.readonly || this.pickerDisabled) return
       if (val) {
         this.showPicker()
-        this.valueOnOpen = Array.isArray(this.value)
-          ? [...this.value]
-          : this.value
+        this.valueOnOpen = Array.isArray(this.modelValue)
+          ? [...this.modelValue]
+          : this.modelValue
       } else {
         this.hidePicker()
-        this.emitChange(this.value)
+        this.emitChange(this.modelValue)
         this.userInput = null
         if (this.validateEvent) {
           this.dispatch('el.form.blur')
@@ -453,7 +455,7 @@ export default {
         this.picker.defaultValue = val
       }
     },
-    value(val, oldVal) {
+    modelValue(val, oldVal) {
       if (
         !valueEquals(val, oldVal) &&
         !this.pickerVisible &&
@@ -482,7 +484,7 @@ export default {
     },
 
     valueIsEmpty() {
-      const val = this.value
+      const val = this.modelValue
       if (Array.isArray(val)) {
         for (let i = 0, len = val.length; i < len; i++) {
           if (val[i]) {
@@ -549,32 +551,32 @@ export default {
     },
 
     parsedValue() {
-      if (!this.value) return this.value // component value is not set
-      if (this.type === 'time-select') return this.value // time-select does not require parsing, this might change in next major version
+      if (!this.modelValue) return this.modelValue // component value is not set
+      if (this.type === 'time-select') return this.modelValue // time-select does not require parsing, this might change in next major version
 
       const valueIsDateObject =
-        isDateObject(this.value) ||
-        (Array.isArray(this.value) && this.value.every(isDateObject))
+        isDateObject(this.modelValue) ||
+        (Array.isArray(this.modelValue) && this.modelValue.every(isDateObject))
       if (valueIsDateObject) {
-        return this.value
+        return this.modelValue
       }
 
       if (this.valueFormat) {
         return (
           parseAsFormatAndType(
-            this.value,
+            this.modelValue,
             this.valueFormat,
             this.type,
             this.rangeSeparator
-          ) || this.value
+          ) || this.modelValue
         )
       }
 
       // NOTE: deal with common but incorrect usage, should remove in next major version
       // user might provide string / timestamp without value-format, coerce them into date (or array of date)
-      return Array.isArray(this.value)
-        ? this.value.map((val) => new Date(val))
-        : new Date(this.value)
+      return Array.isArray(this.modelValue)
+        ? this.modelValue.map((val) => new Date(val))
+        : new Date(this.modelValue)
     },
 
     _elFormItemSize() {
@@ -613,6 +615,9 @@ export default {
   },
 
   created() {
+    const { on } = useEmitter()
+    this.$on = on
+
     // vue-popper
     this.popperOptions = {
       boundariesPadding: 0,
@@ -757,7 +762,7 @@ export default {
     handleClickIcon(event) {
       if (this.readonly || this.pickerDisabled) return
       if (this.showClose) {
-        this.valueOnOpen = this.value
+        this.valueOnOpen = this.modelValue
         event.stopPropagation()
         this.emitInput(null)
         this.emitChange(null)
@@ -892,7 +897,9 @@ export default {
 
     mountPicker() {
       // eslint-disable-next-line no-undef
-      this.picker = new Vue(this.panel).$mount()
+      // this.picker = new Vue(this.panel).$mount()
+      const $el = document.createElement('div')
+      this.picker = createApp(this.panel).mount($el)
       this.picker.defaultValue = this.defaultValue
       this.picker.defaultTime = this.defaultTime
       this.picker.popperClass = this.popperClass
@@ -990,8 +997,8 @@ export default {
 
     emitInput(val) {
       const formatted = this.formatToValue(val)
-      if (!valueEquals(this.value, formatted)) {
-        this.$emit('input', formatted)
+      if (!valueEquals(this.modelValue, formatted)) {
+        this.$emit('update:modelValue', formatted)
       }
     },
 
