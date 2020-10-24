@@ -884,7 +884,6 @@ export default {
         this.mountPicker()
       }
       this.pickerVisible = this.picker.visible = true
-
       this.updatePopper()
 
       this.picker.value = this.parsedValue
@@ -899,7 +898,25 @@ export default {
       // eslint-disable-next-line no-undef
       // this.picker = new Vue(this.panel).$mount()
       const $el = document.createElement('div')
-      this.picker = createApp(this.panel).mount($el)
+      this.picker = createApp(this.panel, {
+        onPick: (date = '', visible = false) => {
+          this.userInput = null
+          this.pickerVisible = this.picker.visible = visible
+          this.emitInput(date)
+          this.picker.resetView && this.picker.resetView()
+        },
+        onDodestroy: this.doDestroy,
+        'onSelect-range': (start, end, pos) => {
+          if (this.refInput.length === 0) return
+          if (!pos || pos === 'min') {
+            this.refInput[0].setSelectionRange(start, end)
+            this.refInput[0].focus()
+          } else if (pos === 'max') {
+            this.refInput[1].setSelectionRange(start, end)
+            this.refInput[1].focus()
+          }
+        }
+      }).mount($el)
       this.picker.defaultValue = this.defaultValue
       this.picker.defaultTime = this.defaultTime
       this.picker.popperClass = this.popperClass
@@ -952,25 +969,6 @@ export default {
       )
       this.$el.appendChild(this.picker.$el)
       this.picker.resetView && this.picker.resetView()
-
-      this.picker.$on('dodestroy', this.doDestroy)
-      this.picker.$on('pick', (date = '', visible = false) => {
-        this.userInput = null
-        this.pickerVisible = this.picker.visible = visible
-        this.emitInput(date)
-        this.picker.resetView && this.picker.resetView()
-      })
-
-      this.picker.$on('select-range', (start, end, pos) => {
-        if (this.refInput.length === 0) return
-        if (!pos || pos === 'min') {
-          this.refInput[0].setSelectionRange(start, end)
-          this.refInput[0].focus()
-        } else if (pos === 'max') {
-          this.refInput[1].setSelectionRange(start, end)
-          this.refInput[1].focus()
-        }
-      })
     },
 
     unmountPicker() {

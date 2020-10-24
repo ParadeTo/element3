@@ -34,7 +34,6 @@
 <script type="text/babel">
 import ElScrollbar from 'element-ui/packages/scrollbar'
 import scrollIntoView from 'element-ui/src/utils/scroll-into-view'
-import { useEmitter } from 'element-ui/src/use/emitter'
 
 const parseTime = function (time) {
   const values = (time || '').split(':')
@@ -94,12 +93,6 @@ const nextTime = function (time, step) {
 export default {
   components: { ElScrollbar },
 
-  created() {
-    const { dispatch, on } = useEmitter()
-    this.$dispatch = dispatch
-    this.$on = on
-  },
-
   watch: {
     value(val) {
       if (!val) return
@@ -110,7 +103,7 @@ export default {
   methods: {
     handleClick(item) {
       if (!item.disabled) {
-        this.$dispatch('pick', item.value)
+        this.$emit('pick', item.value)
       }
     },
 

@@ -55,7 +55,7 @@ export default {
   },
 
   props: {
-    visible: Boolean,
+    // visible: Boolean,
     timeArrowControl: Boolean
   },
 
@@ -107,7 +107,8 @@ export default {
       selectionRange: [0, 2],
       disabled: false,
       arrowControl: false,
-      needInitAdjust: true
+      needInitAdjust: true,
+      visible: false
     }
   },
 
